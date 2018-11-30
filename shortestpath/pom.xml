@@ -29,7 +29,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.polixis.shortestpath.App</mainClass>
+                            <mainClass>com.scatum.shortestpath.App</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
