@@ -12,6 +12,7 @@
         <module>queen</module>
         <module>queen-csharp</module>
         <module>shortestpath</module>
+        <module>algo-problems</module>
     </modules>
     
 </project>
