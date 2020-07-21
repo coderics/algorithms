@@ -4,46 +4,41 @@ import java.util.concurrent.Phaser;
 
 /**
  * ## Parallel Programming in Java
- * 4.2 Point-to-Point Synchronization with Phasers
+ * 4.4 Pipeline Parallelism
  */
-public class PointToPointSynchronization {
+public class PipelineParallelism {
 
     public static void main(String[] args) {
+        final int imagesNum = 100; // Number of images to process
+
         for (int numRun = 0; numRun < 3; numRun++) {
             System.out.printf("Run %d\n", numRun);
             final Phaser ph0 = new Phaser(1);
             final Phaser ph1 = new Phaser(1);
-            final Phaser ph2 = new Phaser(1);
 
-            Thread t0 = new Thread(() -> {
+            Thread t0 = new Thread(() -> { // DENOISE stage
                 Computable c = new Computable();
-                // Phase 0
-                c.doWork(100);
-                ph0.arrive();
-                ph1.awaitAdvance(0);
-                // Phase 1
-                c.doWork(300);
+                for (int i = 0; i < imagesNum; i++) {
+                    c.doWork(10);
+                    ph0.arrive();
+                }
             });
 
-            Thread t1 = new Thread(() -> {
+            Thread t1 = new Thread(() -> { // REGISTER stage
                 Computable c = new Computable();
-                // Phase 0
-                c.doWork(200); // A(2)
-                ph1.arrive();
-                ph0.awaitAdvance(0);
-                ph2.awaitAdvance(0);
-                // Phase 1
-                c.doWork(200); // B(2)
+                for (int i = 0; i < imagesNum; i++) {
+                    ph0.awaitAdvance(i);
+                    c.doWork(10);
+                    ph1.arrive();
+                }
             });
 
-            Thread t2 = new Thread(() -> {
+            Thread t2 = new Thread(() -> { // SEGMENT stage
                 Computable c = new Computable();
-                // Phase 0
-                c.doWork(300); // A(3)
-                ph2.arrive();
-                ph1.awaitAdvance(0);
-                // Phase 1
-                c.doWork(100); // B(3)
+                for (int i = 0; i < imagesNum; i++) {
+                    ph1.awaitAdvance(i);
+                    c.doWork(10);
+                }
             });
 
             ///////////////////////////////////////////////////
@@ -51,14 +46,13 @@ public class PointToPointSynchronization {
             ///////////////////////////////////////////////////
             long startTime = System.nanoTime();
             Computable c = new Computable();
-            c.doWork(100); // t0 - phase 0
-            c.doWork(300); // t0 - phase 1
+            for (int i = 0; i < imagesNum; i++) {
+                c.doWork(10); // DENOISE stage
+                c.doWork(10); // REGISTER stage
+                c.doWork(10); // SEGMENT stage
+            }
 
-            c.doWork(200); // t1 - phase 0
-            c.doWork(200); // t1 - phase 1
 
-            c.doWork(300); // t2 - phase 0
-            c.doWork(100); // t2 - phase 1
             long timeInNanos = System.nanoTime() - startTime;
             System.out.printf(" Sequential version completed in %8.3f seconds\n", timeInNanos / 1e9);
 
