@@ -1,5 +1,8 @@
 package problems;
 
+/*
+    PROBLEM: leetcode.com/problems/greatest-common-divisor-of-strings/
+ */
 class GreatestCommonDivisor {
 
     public String gcdOfStrings(String str1, String str2) {
